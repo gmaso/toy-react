@@ -12,17 +12,17 @@ function createElement(tagName, attributes, ...children) {
   if (children) {
     for (let child of children) {
       if (typeof child === 'string') {
-        tag.innerText = child;
-      } else {
-        tag.appendChild(child);
+        child = document.createTextNode(child);
       }
+      tag.appendChild(child);
     }
   }
   return tag;
 }
 
-window.a = <div id="a" class="c">ccc
+document.body.appendChild(<div id="a" class="c">ccc
   <div>abc</div>
+  bbb
   <div></div>
   <div></div>
-</div>
+</div>);
