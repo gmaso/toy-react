@@ -10,16 +10,19 @@ function createElement(tagName, attributes, ...children) {
     }
   }
   if (children) {
-    for (let i in children) {
-      let child = children[i];
-      tag.appendChild(child);
+    for (let child of children) {
+      if (typeof child === 'string') {
+        tag.innerText = child;
+      } else {
+        tag.appendChild(child);
+      }
     }
   }
   return tag;
 }
 
-window.a = <div id="a" class="c">
-  <div></div>
+window.a = <div id="a" class="c">ccc
+  <div>abc</div>
   <div></div>
   <div></div>
 </div>
