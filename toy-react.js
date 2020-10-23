@@ -7,6 +7,8 @@ class ElementWrapper {
   setAttribute(name, value){
     if (/^on/i.test(name)) {
       this.root.addEventListener(name.replace('on', '').toLowerCase(), value);
+    } else if (name === 'className') {
+      this.root.setAttribute('class', value);
     } else {
       this.root.setAttribute(name, value);
     }
@@ -39,7 +41,6 @@ export class Component {
     this.children = [];
     this._root = null;
     this._range = null;
-    this._state = null;
   }
   setAttribute(name, value){
     this.props[name] = value;
@@ -52,12 +53,19 @@ export class Component {
     this.render()[RENDER_TO_DOM](range);
   }
   rerender(){
-    this._range.deleteContents();
-    this.render()[RENDER_TO_DOM](this._range);
+    let oldRange = this._range;
+
+    let range = document.createRange();
+    range.setStart(oldRange.startContainer, oldRange.startOffset);
+    range.setEnd(oldRange.startContainer, oldRange.startOffset);
+    this[RENDER_TO_DOM](range);
+
+    oldRange.setStart(range.endContainer, range.endOffset);
+    oldRange.deleteContents();
   }
   setState(newState){
-    if (this._state === null || typeof this._state !== 'object') {
-      this._state = newState;
+    if (this.state === null || typeof this.state !== 'object') {
+      this.state = newState;
       this.rerender();
       return;
     }
@@ -70,17 +78,17 @@ export class Component {
         }
       }
     }
-    merge(this._state, newState);
+    merge(this.state, newState);
     this.rerender();
   }
 }
 
 export function createElement(type, attributes, ...children) {
   let tag;
-  if (typeof type === 'function') {
-    tag = new type();
-  } else {
+  if (typeof type === 'string') {
     tag = new ElementWrapper(type);
+  } else {
+    tag = new type;
   }
   if (attributes) {
     for (let attr in attributes) {
@@ -90,8 +98,12 @@ export function createElement(type, attributes, ...children) {
   if (children) {
     let insertChildren = (children) => {
       for (let child of children) {
+        console.log(child)
         if (typeof child === 'string') {
           child = new TextWrapper(child);
+        }
+        if (child === null) {
+          continue;
         }
         if (typeof child === 'object' && child instanceof Array) {
           insertChildren(child);
