@@ -39,6 +39,7 @@ export class Component {
     this.children = [];
     this._root = null;
     this._range = null;
+    this._state = null;
   }
   setAttribute(name, value){
     this.props[name] = value;
@@ -53,6 +54,24 @@ export class Component {
   rerender(){
     this._range.deleteContents();
     this.render()[RENDER_TO_DOM](this._range);
+  }
+  setState(newState){
+    if (this._state === null || typeof this._state !== 'object') {
+      this._state = newState;
+      this.rerender();
+      return;
+    }
+    let merge = (oldState, newState) => {
+      for(let k in newState) {
+        if (oldState[k] === null || typeof oldState[k] !== 'object') {
+          oldState[k] = newState[k];
+        } else {
+          merge(oldState[k], newState[k]);
+        }
+      }
+    }
+    merge(this._state, newState);
+    this.rerender();
   }
 }
 
